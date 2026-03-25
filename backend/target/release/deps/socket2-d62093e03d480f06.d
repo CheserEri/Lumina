@@ -1,0 +1,11 @@
+D:\Code\Projects\OpenCodeLumina\backend\target\release\deps\socket2-d62093e03d480f06.d: C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\lib.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockaddr.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\socket.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockref.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sys\windows.rs
+
+D:\Code\Projects\OpenCodeLumina\backend\target\release\deps\libsocket2-d62093e03d480f06.rlib: C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\lib.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockaddr.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\socket.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockref.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sys\windows.rs
+
+D:\Code\Projects\OpenCodeLumina\backend\target\release\deps\libsocket2-d62093e03d480f06.rmeta: C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\lib.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockaddr.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\socket.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockref.rs C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sys\windows.rs
+
+C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\lib.rs:
+C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockaddr.rs:
+C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\socket.rs:
+C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sockref.rs:
+C:\Users\chese\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.3\src\sys\windows.rs:

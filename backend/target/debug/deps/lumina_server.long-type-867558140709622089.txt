@@ -1,0 +1,1 @@
+futures_util::stream::Scan<futures_util::stream::Map<impl Stream<Item = Result<axum::body::Bytes, reqwest::Error>>, {closure@src\ollama\client.rs:56:18: 56:32}>, std::string::String, std::option::Option<Vec<Result<std::string::String, std::string::String>>>, {closure@src\ollama\client.rs:60:34: 60:56}>
