@@ -125,4 +125,82 @@ class ApiService {
       return false;
     }
   }
+
+  Future<Map<String, dynamic>> saveChat(ChatRequest request,
+      {String format = 'markdown'}) async {
+    try {
+      final requestData = request.toJson();
+      requestData['format'] = format;
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/save_chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        throw Exception('保存聊天失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('连接服务器失败: $e');
+    }
+  }
+
+  Future<List<String>> getSavedChats() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/api/saved_chats'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        final files = data['files'] as List;
+        return files.cast<String>();
+      } else {
+        throw Exception('获取保存的聊天列表失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('连接服务器失败: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteSavedChat(String filename) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/delete_chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'filename': filename}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        throw Exception('删除聊天失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('连接服务器失败: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> renameSavedChat(
+      String oldName, String newName) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/rename_chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'old_name': oldName, 'new_name': newName}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        throw Exception('重命名聊天失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('连接服务器失败: $e');
+    }
+  }
 }

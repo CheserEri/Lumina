@@ -49,3 +49,17 @@ pub struct StreamChunk {
 pub struct ApiError {
     pub error: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SaveChatRequest {
+    pub model: String,
+    pub messages: Vec<ChatMessage>,
+    pub format: Option<String>, // 支持多种格式: markdown, json, txt
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SaveChatResponse {
+    pub success: bool,
+    pub file_path: Option<String>,
+    pub message: Option<String>,
+}

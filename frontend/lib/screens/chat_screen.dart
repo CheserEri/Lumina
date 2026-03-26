@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/chat_models.dart';
 import '../services/api_service.dart';
 import '../widgets/chat_bubble.dart';
+import 'history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -15,12 +16,15 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
+  static const int _maxMessages = 100; // 限制最大消息数量
+  static const int _autoSaveMessageCount = 10; // 每10条消息自动保存一次
   String _selectedModel = '';
   List<OllamaModel> _models = [];
   bool _isLoading = false;
   bool _isStreaming = false;
   String _streamingContent = '';
   bool _isConnected = false;
+  int _messageCountSinceLastSave = 0;
 
   @override
   void initState() {
@@ -70,6 +74,11 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     setState(() {
+      // 清理旧消息以防止内存问题
+      if (_messages.length > _maxMessages) {
+        _messages.removeRange(0, _messages.length - _maxMessages);
+      }
+
       _messages.add(ChatMessage(role: 'user', content: text));
       _isLoading = true;
       _streamingContent = '';
@@ -135,6 +144,9 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _isStreaming = false;
       });
+
+      // 检查是否需要自动保存
+      _checkAutoSave();
     } catch (e) {
       debugPrint('发送消息错误: $e');
       setState(() {
@@ -153,6 +165,70 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.clear();
       _streamingContent = '';
     });
+  }
+
+  void _saveChat({String format = 'markdown'}) async {
+    if (_messages.isEmpty) {
+      _showError('没有聊天内容可保存');
+      return;
+    }
+
+    try {
+      final request = ChatRequest(
+        model: _selectedModel,
+        messages: _messages.where((m) => m.content.isNotEmpty).toList(),
+        stream: false,
+      );
+
+      final response = await _apiService.saveChat(request, format: format);
+
+      if (response['success'] == true) {
+        _showSuccess('聊天已保存: ${response['message']}');
+      } else {
+        _showError('保存失败: ${response['message']}');
+      }
+    } catch (e) {
+      _showError('保存聊天失败: $e');
+    }
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _checkAutoSave() {
+    _messageCountSinceLastSave++;
+    if (_messageCountSinceLastSave >= _autoSaveMessageCount) {
+      _autoSaveChat();
+      _messageCountSinceLastSave = 0;
+    }
+  }
+
+  void _autoSaveChat() async {
+    if (_messages.isEmpty || _selectedModel.isEmpty) return;
+
+    try {
+      final request = ChatRequest(
+        model: _selectedModel,
+        messages: _messages.where((m) => m.content.isNotEmpty).toList(),
+        stream: false,
+      );
+
+      final response = await _apiService.saveChat(request);
+
+      if (response['success'] == true) {
+        _showSuccess('聊天已自动保存');
+      }
+    } catch (e) {
+      // 自动保存失败时不显示错误，避免打扰用户
+      debugPrint('自动保存失败: $e');
+    }
   }
 
   void _scrollToBottom() {
@@ -222,6 +298,21 @@ class _ChatScreenState extends State<ChatScreen> {
             icon: const Icon(Icons.delete_outline),
             tooltip: '清空对话',
             onPressed: _clearChat,
+          ),
+          IconButton(
+            icon: const Icon(Icons.save),
+            tooltip: '保存对话',
+            onPressed: () => _saveChat(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: '聊天历史',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -366,6 +457,7 @@ class _ChatScreenState extends State<ChatScreen> {
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: _messages.length,
+      itemExtent: 80.0, // 添加固定高度以提高滚动性能
       itemBuilder: (context, index) {
         final message = _messages[index];
         final isLast = index == _messages.length - 1;

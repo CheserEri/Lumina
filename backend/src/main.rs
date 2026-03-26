@@ -1,9 +1,11 @@
+mod chat_history;
 mod config;
 mod handlers;
 mod models;
 mod ollama;
 mod routes;
 
+use crate::chat_history::ChatHistoryManager;
 use crate::config::AppConfig;
 use crate::handlers::AppState;
 use crate::ollama::client::OllamaClient;
@@ -31,8 +33,14 @@ async fn main() -> anyhow::Result<()> {
         config.ollama.timeout_secs,
     )?;
 
+    let chat_history_manager = ChatHistoryManager::new(
+        &config.chat_history.save_directory,
+        config.chat_history.auto_save_interval,
+    )?;
+
     let state = AppState {
         ollama: Arc::new(ollama_client),
+        chat_history: Arc::new(chat_history_manager),
     };
 
     let cors = CorsLayer::new()
