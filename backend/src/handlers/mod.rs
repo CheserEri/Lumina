@@ -1,3 +1,4 @@
+use crate::auth::models::{LoginRequest, RegisterRequest};
 use crate::chat_history::ChatHistoryManager;
 use crate::models::{ApiError, ChatRequest, ChatResponse, OllamaTagsResponse, SaveChatRequest, SaveChatResponse};
 use crate::ollama::client::OllamaClient;
@@ -13,6 +14,29 @@ use std::sync::Arc;
 pub struct AppState {
     pub ollama: Arc<OllamaClient>,
     pub chat_history: Arc<ChatHistoryManager>,
+    pub auth: Arc<crate::auth::AuthManager>,
+}
+
+pub async fn register(State(state): State<AppState>, Json(req): Json<RegisterRequest>) -> Response {
+    match state.auth.register(req) {
+        Ok(res) => (StatusCode::CREATED, Json(res)).into_response(),
+        Err(e) => (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": e })),
+        )
+            .into_response(),
+    }
+}
+
+pub async fn login(State(state): State<AppState>, Json(req): Json<LoginRequest>) -> Response {
+    match state.auth.login(req) {
+        Ok(res) => Json(res).into_response(),
+        Err(e) => (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({ "error": e })),
+        )
+            .into_response(),
+    }
 }
 
 pub async fn list_models(State(state): State<AppState>) -> Response {

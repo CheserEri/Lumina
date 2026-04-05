@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Curator | Premium AI Journal</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#f0f4fa",
+                        "primary-container": "#e5e2e1",
+                        "tertiary": "#5b5f65",
+                        "on-tertiary-container": "#575c61",
+                        "primary": "#5f5e5e",
+                        "outline": "#757c7b",
+                        "tertiary-dim": "#4f5459",
+                        "secondary-dim": "#515261",
+                        "on-error-container": "#782232",
+                        "outline-variant": "#adb3b2",
+                        "on-error": "#fff7f7",
+                        "on-primary-fixed": "#403f3f",
+                        "on-background": "#2d3433",
+                        "inverse-surface": "#0c0f0e",
+                        "on-secondary-fixed": "#3d3e4c",
+                        "surface-container-low": "#f2f4f3",
+                        "surface-tint": "#5f5e5e",
+                        "on-tertiary": "#f6f9ff",
+                        "inverse-primary": "#ffffff",
+                        "primary-fixed": "#e5e2e1",
+                        "surface": "#f9f9f8",
+                        "surface-dim": "#d4dcda",
+                        "on-primary-container": "#525151",
+                        "background": "#f9f9f8",
+                        "error-dim": "#4f0116",
+                        "secondary": "#5d5e6d",
+                        "surface-container": "#ebeeed",
+                        "secondary-fixed": "#e2e1f3",
+                        "on-surface": "#2d3433",
+                        "error": "#9e3f4e",
+                        "on-primary": "#faf7f6",
+                        "surface-variant": "#dde4e3",
+                        "tertiary-fixed-dim": "#e2e6ec",
+                        "surface-container-high": "#e4e9e8",
+                        "error-container": "#ff8b9a",
+                        "primary-dim": "#535252",
+                        "secondary-fixed-dim": "#d4d3e5",
+                        "surface-container-highest": "#dde4e3",
+                        "primary-fixed-dim": "#d6d4d3",
+                        "on-tertiary-fixed": "#454a4f",
+                        "inverse-on-surface": "#9c9d9c",
+                        "on-tertiary-fixed-variant": "#62676c",
+                        "on-secondary": "#fbf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#5a6060",
+                        "on-primary-fixed-variant": "#5c5b5b",
+                        "on-secondary-container": "#50515f",
+                        "tertiary-fixed": "#f0f4fa",
+                        "surface-bright": "#f9f9f8",
+                        "secondary-container": "#e2e1f3",
+                        "on-secondary-fixed-variant": "#5a5a69"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        .scale-98-active:active { transform: scale(0.98); }
+        .tonal-shift-no-border { border: none !important; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-secondary-fixed">
+<div class="flex min-h-screen">
+<!-- SideNavBar: Authority Source JSON Mapping -->
+<!-- style_shell_layout: fixed left-0 top-0 h-full -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#ebeeed] dark:bg-slate-900 flex-col hidden md:flex font-manrope text-sm tracking-wide transition-all z-50">
+<div class="p-6">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-8 h-8 rounded-lg bg-primary-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-xl font-bold tracking-tight text-[#2d3433] dark:text-white leading-none">The Curator</h1>
+<span class="text-[10px] uppercase tracking-widest opacity-50 font-medium">Premium Journal</span>
+</div>
+</div>
+<button class="w-full flex items-center gap-2 px-4 py-3 bg-white/50 dark:bg-slate-800 border-l-2 border-[#5d5e6d] font-bold text-[#2d3433] scale-98-active transition-all mb-8">
+<span class="material-symbols-outlined" data-icon="add_notes">add_notes</span>
+                    New Chat
+                </button>
+<nav class="space-y-1">
+<!-- Mapping labels from tab_labels: ["New Chat", "Recent Threads", "Saved Prompts", "Archive"] -->
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5b5f65] dark:text-slate-400 opacity-80 hover:bg-[#dde4e3] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                        Recent Threads
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5b5f65] dark:text-slate-400 opacity-80 hover:bg-[#dde4e3] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+                        Saved Prompts
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5b5f65] dark:text-slate-400 opacity-80 hover:bg-[#dde4e3] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="archive">archive</span>
+                        Archive
+                    </a>
+</nav>
+</div>
+<div class="mt-auto p-6 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5b5f65] dark:text-slate-400 opacity-80 hover:bg-[#dde4e3] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5b5f65] dark:text-slate-400 opacity-80 hover:bg-[#dde4e3] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                    Help
+                </a>
+<div class="pt-4 mt-4 border-t border-outline-variant/10 flex items-center gap-3 px-4">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a thoughtful person in soft natural lighting, minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE_wvb7rGeV5pVjloMPEoXfLM6HN94Wv5leE0DozAxIqoLewAim7y_I5mEqgj_Yl2eNhdsPd07n_QyhAwltJSPhS1lwqDvKdOenCobtw22Pmb9pJt2dBq3SCtBnX_mYm3um9daPKMBA9a_3EtnTY9w3WgBIsBeyeSUFIDkgN1tFygTsV8DanTTXPPeqZ9VNoU5rM97Veotj6kxbMCLm9ow8X4JSk5WAHigBUL1ml-HJj1PdoPppxERRufygdFIGv-z6-sr6HHmyKah"/>
+</div>
+<span class="text-xs font-semibold text-on-surface">User Profile</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 relative flex flex-col min-h-screen bg-surface">
+<!-- TopNavBar: Authority Source JSON Mapping -->
+<header class="fixed md:left-64 right-0 top-0 z-40 bg-[#f9f9f8]/80 dark:bg-slate-950/80 backdrop-blur-xl flex justify-between items-center w-full px-8 py-4">
+<div class="flex items-center gap-6">
+<span class="text-lg font-semibold text-[#2d3433] dark:text-white font-manrope">Claude AI</span>
+<nav class="hidden sm:flex gap-4">
+<a class="text-[#2d3433] font-bold border-b border-[#5d5e6d] font-manrope uppercase tracking-widest text-[10px]" href="#">Model v2.1</a>
+<a class="text-[#5b5f65] dark:text-slate-400 hover:opacity-70 transition-opacity font-manrope uppercase tracking-widest text-[10px]" href="#">Knowledge Base</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#5f5e5e] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="p-2 text-[#5f5e5e] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Canvas Area -->
+<div class="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-48 max-w-5xl mx-auto w-full">
+<!-- Welcome Section -->
+<div class="text-center mb-16 space-y-4">
+<h2 class="text-4xl md:text-5xl font-extrabold font-headline tracking-tight text-on-surface">
+                        What shall we curate today?
+                    </h2>
+<p class="text-on-surface-variant font-body text-lg max-w-xl mx-auto">
+                        Your intellectual workspace for profound synthesis and intentional creation.
+                    </p>
+</div>
+<!-- Suggestions Bento-ish Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mb-12">
+<button class="group p-6 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all duration-300 text-left flex flex-col gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-medium text-on-surface">Summarize a document</span>
+<span class="text-xs text-on-surface-variant opacity-70">Extract the essence from long-form content.</span>
+</button>
+<button class="group p-6 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all duration-300 text-left flex flex-col gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">code</span>
+<span class="font-medium text-on-surface">Analyze code</span>
+<span class="text-xs text-on-surface-variant opacity-70">Debug or refactor complex logic flows.</span>
+</button>
+<button class="group p-6 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all duration-300 text-left flex flex-col gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">mail</span>
+<span class="font-medium text-on-surface">Write an email</span>
+<span class="text-xs text-on-surface-variant opacity-70">Draft professional and curated messages.</span>
+</button>
+</div>
+</div>
+<!-- Focused Input Area (Fixed Bottom) -->
+<div class="fixed bottom-0 md:left-64 right-0 px-6 pb-12 pt-8 bg-gradient-to-t from-surface via-surface to-transparent pointer-events-none">
+<div class="max-w-3xl mx-auto w-full pointer-events-auto">
+<div class="relative flex items-end gap-3 p-4 bg-surface-container-lowest border-none rounded-xl shadow-[0_20px_40px_rgba(45,52,51,0.04)] focus-within:shadow-[0_20px_60px_rgba(45,52,51,0.08)] transition-shadow duration-300">
+<button class="p-2.5 rounded-lg hover:bg-surface-container-highest text-on-surface-variant transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="attachment">attachment</span>
+</button>
+<div class="flex-1 py-1">
+<textarea class="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline-variant font-body text-base resize-none overflow-hidden" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="How can I help you today?" rows="1"></textarea>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2.5 rounded-lg hover:bg-surface-container-highest text-on-surface-variant transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="p-2.5 rounded-lg bg-primary hover:bg-primary-dim text-on-primary transition-all flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined" data-icon="arrow_upward" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+</button>
+</div>
+</div>
+<!-- Footer Disclaimer -->
+<div class="mt-4 text-center">
+<p class="text-[10px] text-outline-variant uppercase tracking-widest font-medium">The Curator may provide information for inspiration. Please verify facts.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile Navigation (Bottom Bar) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-outline-variant/10 h-16 flex items-center justify-around z-50">
+<button class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_notes</span>
+</button>
+<button class="flex flex-col items-center text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="flex flex-col items-center text-on-surface-variant">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="flex flex-col items-center text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</nav>
+</body></html>

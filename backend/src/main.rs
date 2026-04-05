@@ -1,3 +1,4 @@
+mod auth;
 mod chat_history;
 mod config;
 mod handlers;
@@ -5,13 +6,13 @@ mod models;
 mod ollama;
 mod routes;
 
+use crate::auth::AuthManager;
 use crate::chat_history::ChatHistoryManager;
 use crate::config::AppConfig;
 use crate::handlers::AppState;
 use crate::ollama::client::OllamaClient;
 use crate::routes::create_router;
 use axum::http::Method;
-use axum::Router;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
@@ -40,9 +41,12 @@ async fn main() -> anyhow::Result<()> {
         config.chat_history.auto_save_interval,
     )?;
 
+    let auth_manager = AuthManager::new();
+
     let state = AppState {
         ollama: Arc::new(ollama_client),
         chat_history: Arc::new(chat_history_manager),
+        auth: Arc::new(auth_manager),
     };
 
     let cors = CorsLayer::new()

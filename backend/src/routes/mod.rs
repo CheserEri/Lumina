@@ -6,11 +6,16 @@ use axum::{
 use futures_util::Stream;
 use futures_util::StreamExt;
 
-use crate::handlers::{chat, list_models, save_chat, list_saved_chats, delete_saved_chat, rename_saved_chat, AppState};
+use crate::handlers::{
+    chat, delete_saved_chat, list_models, list_saved_chats, login, register, rename_saved_chat,
+    save_chat, AppState,
+};
 use crate::models::ChatRequest;
 
 pub fn create_router(state: AppState) -> Router {
     Router::new()
+        .route("/api/auth/register", post(register))
+        .route("/api/auth/login", post(login))
         .route("/api/models", get(list_models))
         .route("/api/chat", post(chat))
         .route("/api/chat/stream", post(stream_chat))

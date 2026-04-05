@@ -6,13 +6,77 @@ import '../models/chat_models.dart';
 class ApiService {
   static const String defaultBaseUrl = '';
   String _baseUrl;
+  String? _token;
 
   ApiService({String? baseUrl}) : _baseUrl = baseUrl ?? defaultBaseUrl;
 
   String get baseUrl => _baseUrl;
+  String? get token => _token;
 
   set baseUrl(String url) {
     _baseUrl = url;
+  }
+
+  set token(String? value) {
+    _token = value;
+  }
+
+  Map<String, String> get _authHeaders {
+    final headers = <String, String>{};
+    if (_token != null) {
+      headers['Authorization'] = 'Bearer $_token';
+    }
+    return headers;
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await html.HttpRequest.request(
+        '$_baseUrl/api/auth/register',
+        method: 'POST',
+        requestHeaders: {'Content-Type': 'application/json'},
+        sendData: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
+      final data = json.decode(response.responseText!);
+      if (data['token'] != null) {
+        _token = data['token'];
+      }
+      return data;
+    } catch (e) {
+      throw Exception('注册失败: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> login({
+    required String username,
+    required String password,
+  }) async {
+    try {
+      final response = await html.HttpRequest.request(
+        '$_baseUrl/api/auth/login',
+        method: 'POST',
+        requestHeaders: {'Content-Type': 'application/json'},
+        sendData: json.encode({
+          'username': username,
+          'password': password,
+        }),
+      );
+      final data = json.decode(response.responseText!);
+      if (data['token'] != null) {
+        _token = data['token'];
+      }
+      return data;
+    } catch (e) {
+      throw Exception('登录失败: $e');
+    }
   }
 
   Future<List<OllamaModel>> getModels() async {
@@ -33,7 +97,10 @@ class ApiService {
       final response = await html.HttpRequest.request(
         '$_baseUrl/api/chat',
         method: 'POST',
-        requestHeaders: {'Content-Type': 'application/json'},
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          ..._authHeaders,
+        },
         sendData: json.encode(request.toJson()),
       );
       final data = json.decode(response.responseText!);
@@ -124,7 +191,10 @@ class ApiService {
       final response = await html.HttpRequest.request(
         '$_baseUrl/api/save_chat',
         method: 'POST',
-        requestHeaders: {'Content-Type': 'application/json'},
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          ..._authHeaders,
+        },
         sendData: json.encode(requestData),
       );
       return json.decode(response.responseText!);
@@ -151,7 +221,10 @@ class ApiService {
       final response = await html.HttpRequest.request(
         '$_baseUrl/api/delete_chat',
         method: 'POST',
-        requestHeaders: {'Content-Type': 'application/json'},
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          ..._authHeaders,
+        },
         sendData: json.encode({'filename': filename}),
       );
       return json.decode(response.responseText!);
@@ -168,7 +241,10 @@ class ApiService {
       final response = await html.HttpRequest.request(
         '$_baseUrl/api/rename_chat',
         method: 'POST',
-        requestHeaders: {'Content-Type': 'application/json'},
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          ..._authHeaders,
+        },
         sendData: json.encode({'old_name': oldName, 'new_name': newName}),
       );
       return json.decode(response.responseText!);

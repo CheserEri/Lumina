@@ -41,7 +41,7 @@ impl Default for AppConfig {
             },
             chat_history: ChatHistoryConfig {
                 // 填写聊天历史保存目录路径
-                save_directory: "/path/to/chat/history".to_string(),
+                save_directory: "/tmp/lumina_chats".to_string(),
                 auto_save: true,
                 auto_save_interval: 300, // 5分钟
             },

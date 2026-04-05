@@ -3,16 +3,18 @@ import '../models/chat_models.dart';
 import '../services/api_service.dart';
 import '../widgets/chat_bubble.dart';
 import 'history_screen.dart';
+import 'login_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final ApiService apiService;
+
+  const ChatScreen({super.key, required this.apiService});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final ApiService _apiService = ApiService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
@@ -25,6 +27,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String _streamingContent = '';
   bool _isConnected = false;
   int _messageCountSinceLastSave = 0;
+  bool _sidebarOpen = true;
+
+  ApiService get _apiService => widget.apiService;
 
   @override
   void initState() {
@@ -60,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       });
     } catch (e) {
-      _showError('加载模型失败: $e');
+      _showError('Failed to load models: $e');
     }
   }
 
@@ -69,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty || _isLoading || _isStreaming) return;
 
     if (_selectedModel.isEmpty) {
-      _showError('请先选择一个模型');
+      _showError('Please select a model first');
       return;
     }
 
@@ -104,7 +109,6 @@ class _ChatScreenState extends State<ChatScreen> {
       bool receivedAnyContent = false;
 
       await for (final chunk in _apiService.chatStream(request)) {
-        debugPrint('收到chunk: "$chunk"');
         receivedAnyContent = true;
         setState(() {
           _streamingContent += chunk;
@@ -119,7 +123,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       if (!receivedAnyContent) {
-        debugPrint('流式模式未收到内容，尝试非流式模式');
         final nonStreamRequest = ChatRequest(
           model: _selectedModel,
           messages: _messages
@@ -145,7 +148,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
       _checkAutoSave();
     } catch (e) {
-      debugPrint('发送消息错误: $e');
       setState(() {
         _isStreaming = false;
         _isLoading = false;
@@ -153,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages.removeLast();
         }
       });
-      _showError('发送消息失败: $e');
+      _showError('Failed to send message: $e');
     }
   }
 
@@ -166,7 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _saveChat({String format = 'markdown'}) async {
     if (_messages.isEmpty) {
-      _showError('没有聊天内容可保存');
+      _showError('No messages to save');
       return;
     }
 
@@ -180,12 +182,12 @@ class _ChatScreenState extends State<ChatScreen> {
       final response = await _apiService.saveChat(request, format: format);
 
       if (response['success'] == true) {
-        _showSuccess('聊天已保存: ${response['message']}');
+        _showSuccess('Chat saved: ${response['message']}');
       } else {
-        _showError('保存失败: ${response['message']}');
+        _showError('Save failed: ${response['message']}');
       }
     } catch (e) {
-      _showError('保存聊天失败: $e');
+      _showError('Failed to save chat: $e');
     }
   }
 
@@ -193,7 +195,7 @@ class _ChatScreenState extends State<ChatScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF2d3433),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -220,10 +222,10 @@ class _ChatScreenState extends State<ChatScreen> {
       final response = await _apiService.saveChat(request);
 
       if (response['success'] == true) {
-        _showSuccess('聊天已自动保存');
+        _showSuccess('Chat auto-saved');
       }
     } catch (e) {
-      debugPrint('自动保存失败: $e');
+      debugPrint('Auto-save failed: $e');
     }
   }
 
@@ -241,171 +243,278 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+          content: Text(message), backgroundColor: const Color(0xFF9e3f4e)),
+    );
+  }
+
+  void _logout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4285F4), Color(0xFF10A37F)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: Row(
+        children: [
+          if (_sidebarOpen) _buildSidebar(isDark),
+          Expanded(
+            child: Column(
+              children: [
+                _buildTopBar(isDark),
+                Expanded(
+                  child: _messages.isEmpty
+                      ? _buildWelcomeArea(isDark)
+                      : _buildChatList(isDark),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Text(
-                  'L',
+                if (_isStreaming) _buildStreamingIndicator(isDark),
+                _buildInputArea(isDark),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebar(bool isDark) {
+    final surfaceColor =
+        isDark ? const Color(0xFF1a1a2e) : const Color(0xFFebeeed);
+    final textColor =
+        isDark ? const Color(0xFFe0e0e0) : const Color(0xFF5b5f65);
+
+    return Container(
+      width: 260,
+      color: surfaceColor,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5d5e6d).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: Color(0xFF5d5e6d),
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Lumina',
                   style: TextStyle(
-                    color: Colors.white,
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: Color(0xFF2d3433),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _clearChat,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('New Chat'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: isDark
+                      ? const Color(0xFF2a2a3e)
+                      : Colors.white.withOpacity(0.5),
+                  foregroundColor:
+                      isDark ? Colors.white : const Color(0xFF2d3433),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(
+                      color: isDark
+                          ? Colors.transparent
+                          : const Color(0xFF5d5e6d).withOpacity(0.3),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            const Text('Lumina'),
-          ],
-        ),
-        actions: [
-          if (_models.isNotEmpty) _buildModelSelector(isDark),
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 20),
-            tooltip: '刷新模型',
-            onPressed: _loadModels,
           ),
-          IconButton(
-            icon: const Icon(Icons.history_outlined, size: 20),
-            tooltip: '聊天历史',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const HistoryScreen()),
-              );
-            },
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _SidebarItem(
+                  icon: Icons.history_outlined,
+                  label: 'Recent Threads',
+                  textColor: textColor,
+                  onTap: () {},
+                ),
+                _SidebarItem(
+                  icon: Icons.star_outline,
+                  label: 'Saved Prompts',
+                  textColor: textColor,
+                  onTap: () {},
+                ),
+                _SidebarItem(
+                  icon: Icons.archive_outlined,
+                  label: 'Archive',
+                  textColor: textColor,
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_horiz, size: 20),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'save',
-                child: Row(
-                  children: [
-                    Icon(Icons.save_outlined, size: 20),
-                    SizedBox(width: 12),
-                    Text('保存对话'),
-                  ],
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _SidebarItem(
+                  icon: Icons.settings_outlined,
+                  label: 'Settings',
+                  textColor: textColor,
+                  onTap: () {},
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'clear',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline, size: 20),
-                    SizedBox(width: 12),
-                    Text('清空对话'),
-                  ],
+                _SidebarItem(
+                  icon: Icons.history,
+                  label: 'Chat History',
+                  textColor: textColor,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const HistoryScreen()),
+                    );
+                  },
                 ),
-              ),
-            ],
-            onSelected: (value) {
-              if (value == 'save') {
-                _saveChat();
-              } else if (value == 'clear') {
-                _clearChat();
-              }
-            },
+                const Divider(height: 24, thickness: 0.5),
+                _SidebarItem(
+                  icon: Icons.logout,
+                  label: 'Sign Out',
+                  textColor: const Color(0xFF9e3f4e),
+                  onTap: _logout,
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _messages.isEmpty
-                ? _buildWelcomeMessage(isDark)
-                : _buildChatList(isDark),
+    );
+  }
+
+  Widget _buildTopBar(bool isDark) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF171717).withOpacity(0.8)
+            : const Color(0xFFf9f9f8).withOpacity(0.8),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFe5e5e5),
+            width: 0.5,
           ),
-          if (_isStreaming) _buildStreamingIndicator(isDark),
-          _buildInputArea(isDark),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.menu, size: 20),
+            onPressed: () {
+              setState(() {
+                _sidebarOpen = !_sidebarOpen;
+              });
+            },
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Lumina AI',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : const Color(0xFF2d3433),
+            ),
+          ),
+          const SizedBox(width: 24),
+          if (_models.isNotEmpty) _buildModelSelector(isDark),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.share_outlined, size: 20),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_horiz, size: 20),
+            onPressed: () {},
+          ),
         ],
       ),
     );
   }
 
   Widget _buildModelSelector(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 4),
-      child: Material(
-        color: isDark ? const Color(0xFF444654) : const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(20),
-        child: PopupMenuButton<String>(
-          tooltip: '选择模型',
-          onSelected: (model) {
-            setState(() {
-              _selectedModel = model;
-            });
-          },
-          itemBuilder: (context) => _models
-              .map(
-                (m) => PopupMenuItem(
-                  value: m.name,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.smart_toy_outlined, size: 18),
-                      const SizedBox(width: 10),
-                      Text(m.name),
-                    ],
-                  ),
+    return Material(
+      color: Colors.transparent,
+      child: PopupMenuButton<String>(
+        tooltip: 'Select model',
+        onSelected: (model) {
+          setState(() {
+            _selectedModel = model;
+          });
+        },
+        itemBuilder: (context) => _models
+            .map(
+              (m) => PopupMenuItem(
+                value: m.name,
+                child: Row(
+                  children: [
+                    const Icon(Icons.smart_toy_outlined, size: 18),
+                    const SizedBox(width: 10),
+                    Text(m.name),
+                  ],
                 ),
-              )
-              .toList(),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.smart_toy_outlined,
-                  size: 18,
-                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+              ),
+            )
+            .toList(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2a2a3e) : const Color(0xFFf0f0f0),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _selectedModel,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.grey[300] : const Color(0xFF5b5f65),
                 ),
-                const SizedBox(width: 6),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 100),
-                  child: Text(
-                    _selectedModel.isEmpty ? '选择模型' : _selectedModel,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const Icon(Icons.arrow_drop_down, size: 18),
-              ],
-            ),
+              ),
+              const Icon(Icons.arrow_drop_down, size: 16),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildWelcomeMessage(bool isDark) {
+  Widget _buildWelcomeArea(bool isDark) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -416,83 +525,119 @@ class _ChatScreenState extends State<ChatScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4285F4), Color(0xFF10A37F)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: const Color(0xFF5d5e6d).withOpacity(0.12),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10A37F).withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
               child: const Center(
-                child: Icon(Icons.auto_awesome, color: Colors.white, size: 36),
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: Color(0xFF5d5e6d),
+                  size: 36,
+                ),
               ),
             ),
             const SizedBox(height: 28),
             const Text(
-              '你好，有什么可以帮你的吗？',
+              'What shall we curate today?',
               style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.5,
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
+                color: Color(0xFF2d3433),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your intellectual workspace for profound synthesis\nand intentional creation.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDark ? Colors.grey[400] : const Color(0xFF5b5f65),
+                height: 1.6,
               ),
             ),
-            const SizedBox(height: 36),
-            _buildSuggestionChips(isDark),
+            const SizedBox(height: 48),
+            _buildSuggestionCards(isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSuggestionChips(bool isDark) {
+  Widget _buildSuggestionCards(bool isDark) {
     final suggestions = [
-      {'icon': Icons.code, 'text': '用 Python 写一个快速排序'},
-      {'icon': Icons.science, 'text': '解释薛定谔方程'},
-      {'icon': Icons.article, 'text': '帮我写一篇文章'},
-      {'icon': Icons.lightbulb, 'text': 'E = mc² 的含义'},
+      {
+        'icon': Icons.description,
+        'title': 'Summarize a document',
+        'desc': 'Extract the essence from long-form content.'
+      },
+      {
+        'icon': Icons.code,
+        'title': 'Analyze code',
+        'desc': 'Debug or refactor complex logic flows.'
+      },
+      {
+        'icon': Icons.mail,
+        'title': 'Write an email',
+        'desc': 'Draft professional and curated messages.'
+      },
     ];
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
+    final containerColor =
+        isDark ? const Color(0xFF2a2a3e) : const Color(0xFFf2f4f3);
+    final hoverColor =
+        isDark ? const Color(0xFF33334a) : const Color(0xFFebeeed);
+    final titleColor = isDark ? Colors.white : const Color(0xFF2d3433);
+    final descColor = isDark ? Colors.grey[400] : const Color(0xFF5b5f65);
+    final iconColor = const Color(0xFF5d5e6d);
+
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.4,
+      physics: const NeverScrollableScrollPhysics(),
       children: suggestions.map((s) {
         return Material(
-          color: isDark ? const Color(0xFF2F2F2F) : const Color(0xFFF7F7F8),
-          borderRadius: BorderRadius.circular(16),
+          color: containerColor,
+          borderRadius: BorderRadius.circular(12),
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             onTap: () {
-              _messageController.text = s['text'] as String;
+              _messageController.text = s['title'] as String;
               _sendMessage();
             },
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    s['icon'] as IconData,
-                    size: 18,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      s['text'] as String,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  Icon(s['icon'] as IconData, color: iconColor, size: 24),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s['title'] as String,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        s['desc'] as String,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: descColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -507,8 +652,8 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scrollbar(
       controller: _scrollController,
       thumbVisibility: true,
-      thickness: 8,
-      radius: const Radius.circular(4),
+      thickness: 6,
+      radius: const Radius.circular(3),
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.only(bottom: 8),
@@ -532,8 +677,8 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         children: [
           SizedBox(
-            width: 16,
-            height: 16,
+            width: 14,
+            height: 14,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
@@ -543,7 +688,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            'AI 正在思考...',
+            'AI is thinking...',
             style: TextStyle(
               fontSize: 12,
               color: isDark ? Colors.grey[400] : Colors.grey[500],
@@ -556,131 +701,152 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildInputArea(bool isDark) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF212121) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E5E5),
-            width: 0.5,
-          ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            (isDark ? const Color(0xFF171717) : const Color(0xFFf9f9f8))
+                .withOpacity(0),
+            isDark ? const Color(0xFF171717) : const Color(0xFFf9f9f8),
+          ],
+          stops: const [0.0, 0.6],
         ),
       ),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!_isConnected)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      size: 14,
-                      color: Colors.orange[600],
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '未连接到服务器',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.orange[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF2F2F2F)
-                          : const Color(0xFFF7F7F8),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
+            Container(
+              constraints: const BoxConstraints(maxWidth: 768),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF444444)
-                            : const Color(0xFFE0E0E0),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      maxLines: null,
-                      minLines: 1,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendMessage(),
-                      decoration: InputDecoration(
-                        hintText: '给 Lumina 发送消息...',
-                        hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
-                        ),
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                      ),
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF333333),
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: _isLoading || _isStreaming
-                        ? null
-                        : const LinearGradient(
-                            colors: [Color(0xFF4285F4), Color(0xFF10A37F)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                            ? const Color(0xFFffffff).withOpacity(0.05)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isDark
+                                    ? Colors.black
+                                    : const Color(0xFF2d3433))
+                                .withOpacity(0.04),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
-                    color: _isLoading || _isStreaming ? Colors.grey[400] : null,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: _isLoading || _isStreaming
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: const Color(0xFF10A37F).withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      _isLoading || _isStreaming
-                          ? Icons.hourglass_empty
-                          : Icons.arrow_upward,
-                      color: Colors.white,
-                      size: 22,
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _messageController,
+                        maxLines: null,
+                        minLines: 1,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
+                        decoration: InputDecoration(
+                          hintText: 'How can I help you today?',
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? Colors.grey[500]
+                                : const Color(0xFFadb3b2),
+                          ),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                        style: TextStyle(
+                          color:
+                              isDark ? Colors.white : const Color(0xFF2d3433),
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
-                    onPressed: _isLoading || _isStreaming ? null : _sendMessage,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: _isLoading || _isStreaming
+                          ? Colors.grey[400]
+                          : const Color(0xFF5d5e6d),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        _isLoading || _isStreaming
+                            ? Icons.hourglass_empty
+                            : Icons.arrow_upward,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed:
+                          _isLoading || _isStreaming ? null : _sendMessage,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             Text(
-              'Lumina 可能会犯错，请核实重要信息。',
+              'Lumina may provide information for inspiration. Please verify facts.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
-                color: isDark ? Colors.grey[600] : Colors.grey[400],
+                fontSize: 10,
+                color: isDark ? Colors.grey[600] : const Color(0xFFadb3b2),
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SidebarItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  const _SidebarItem({
+    required this.icon,
+    required this.label,
+    required this.textColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: textColor.withOpacity(0.8)),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: textColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -701,57 +867,49 @@ class _ChatMessageRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
+    final bgColor = isUser
+        ? (isDark ? const Color(0xFF1a1a1a) : Colors.white)
+        : (isDark ? const Color(0xFF171717) : const Color(0xFFf2f4f3));
 
     return Container(
-      color: isUser
-          ? (isDark ? const Color(0xFF212121) : Colors.white)
-          : (isDark ? const Color(0xFF171717) : const Color(0xFFF7F7F8)),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isUser)
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4285F4), Color(0xFF10A37F)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Icon(Icons.auto_awesome, color: Colors.white, size: 18),
-              ),
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isUser
+                  ? const Color(0xFF5d5e6d)
+                  : const Color(0xFF5d5e6d).withOpacity(0.15),
+              borderRadius: BorderRadius.circular(6),
             ),
-          if (isUser)
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF555555) : const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Icon(Icons.person, color: Colors.white, size: 18),
-              ),
+            child: Center(
+              child: isUser
+                  ? const Icon(Icons.person, color: Colors.white, size: 14)
+                  : const Icon(
+                      Icons.auto_awesome,
+                      color: Color(0xFF5d5e6d),
+                      size: 14,
+                    ),
             ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    isUser ? '你' : 'Lumina',
+                    isUser ? 'You' : 'Lumina',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color:
+                          isDark ? Colors.grey[300] : const Color(0xFF2d3433),
                     ),
                   ),
                 ),
@@ -761,6 +919,7 @@ class _ChatMessageRow extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 15,
                           height: 1.6,
+                          color: Color(0xFF2d3433),
                         ),
                       )
                     : ChatBubble(
