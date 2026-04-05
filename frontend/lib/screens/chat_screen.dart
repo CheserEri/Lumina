@@ -718,6 +718,7 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            _buildModelPicker(isDark),
             Container(
               constraints: const BoxConstraints(maxWidth: 768),
               child: Row(
@@ -808,6 +809,139 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildModelPicker(bool isDark) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 768),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Material(
+              color: isDark
+                  ? const Color(0xFFffffff).withOpacity(0.05)
+                  : const Color(0xFFf2f4f3),
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: _models.isEmpty ? _loadModels : null,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.smart_toy_outlined,
+                        size: 18,
+                        color:
+                            isDark ? Colors.grey[400] : const Color(0xFF5b5f65),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _selectedModel.isEmpty
+                              ? 'Tap to select model'
+                              : _selectedModel,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? Colors.grey[300]
+                                : const Color(0xFF2d3433),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: _loadModels,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.refresh,
+                            size: 16,
+                            color: isDark
+                                ? Colors.grey[500]
+                                : const Color(0xFF5b5f65),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_models.isNotEmpty) const SizedBox(width: 8),
+          if (_models.isNotEmpty)
+            Material(
+              color: const Color(0xFF5d5e6d),
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: _showModelMenu,
+                child: const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showModelMenu() {
+    if (_models.isEmpty) return;
+
+    // Find the render box of the button for positioning
+    final context = this.context;
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero),
+            ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: _models
+          .map(
+            (m) => PopupMenuItem(
+              value: m.name,
+              child: Row(
+                children: [
+                  if (m.name == _selectedModel)
+                    const Icon(Icons.check, size: 18, color: Color(0xFF5d5e6d)),
+                  if (m.name != _selectedModel) const SizedBox(width: 18),
+                  const SizedBox(width: 8),
+                  Text(m.name),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ).then((selected) {
+      if (selected != null) {
+        setState(() {
+          _selectedModel = selected;
+        });
+      }
+    });
   }
 }
 

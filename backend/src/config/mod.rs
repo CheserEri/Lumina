@@ -32,7 +32,7 @@ impl Default for AppConfig {
             ollama: OllamaConfig {
                 // 填写 Ollama 服务地址，如本地部署: "http://localhost:11434"
                 // 或局域网地址: "http://192.168.x.x:11434"
-                base_url: "http://192.168.x.x:11434".to_string(),
+                base_url: "http://192.168.31.85:11434".to_string(),
                 timeout_secs: 300,
             },
             server: ServerConfig {

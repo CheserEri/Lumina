@@ -13,8 +13,22 @@ pub struct AuthManager {
 
 impl AuthManager {
     pub fn new() -> Self {
+        let mut users = HashMap::new();
+
+        let admin_password_hash = bcrypt::hash("admin123", bcrypt::DEFAULT_COST).unwrap();
+        let admin_id = "00000000-0000-0000-0000-000000000001".to_string();
+        users.insert(
+            admin_id.clone(),
+            User {
+                id: admin_id,
+                username: "admin".to_string(),
+                email: "admin@lumina.local".to_string(),
+                password_hash: admin_password_hash,
+            },
+        );
+
         Self {
-            users: RwLock::new(HashMap::new()),
+            users: RwLock::new(users),
         }
     }
 
