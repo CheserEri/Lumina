@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/chat_models.dart';
 import '../services/api_service.dart';
 import '../widgets/chat_bubble.dart';
@@ -300,16 +301,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5d5e6d).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.auto_awesome,
-                      color: Color(0xFF5d5e6d),
-                      size: 18,
-                    ),
+                  child: SvgPicture.asset(
+                    'assets/logo.svg',
+                    width: 32,
+                    height: 32,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -524,16 +519,10 @@ class _ChatScreenState extends State<ChatScreen> {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFF5d5e6d).withOpacity(0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.auto_awesome,
-                  color: Color(0xFF5d5e6d),
-                  size: 36,
-                ),
+              child: SvgPicture.asset(
+                'assets/logo.svg',
+                width: 72,
+                height: 72,
               ),
             ),
             const SizedBox(height: 28),

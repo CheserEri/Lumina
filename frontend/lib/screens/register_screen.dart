@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/api_service.dart';
 import 'chat_screen.dart';
 import 'login_screen.dart';
@@ -82,16 +83,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: 64,
                   height: 64,
                   margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5d5e6d).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.auto_awesome,
-                      color: Color(0xFF5d5e6d),
-                      size: 32,
-                    ),
+                  child: SvgPicture.asset(
+                    'assets/logo.svg',
+                    width: 64,
+                    height: 64,
                   ),
                 ),
                 const Text(
