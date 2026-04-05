@@ -2,15 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFF10A37F);
-  static const Color backgroundColor = Color(0xFFFFFFFF);
-  static const Color surfaceColor = Color(0xFFF7F7F8);
-  static const Color userBubbleColor = Color(0xFFFFFFFF);
-  static const Color assistantBubbleColor = Color(0xFFF7F7F8);
-  static const Color inputBackgroundColor = Color(0xFFFFFFFF);
-  static const Color textPrimary = Color(0xFF343541);
-  static const Color textSecondary = Color(0xFF6E6E80);
-  static const Color borderColor = Color(0xFFE5E5E5);
-  static const Color codeBackgroundColor = Color(0xFFF6F8FA);
+  static const Color accentColor = Color(0xFF4285F4);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -18,53 +10,35 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: ColorScheme.light(
         primary: primaryColor,
-        surface: surfaceColor,
+        secondary: accentColor,
+        surface: const Color(0xFFF7F7F8),
         onPrimary: Colors.white,
-        onSurface: textPrimary,
+        onSurface: const Color(0xFF333333),
       ),
-      scaffoldBackgroundColor: backgroundColor,
+      scaffoldBackgroundColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: backgroundColor,
-        foregroundColor: textPrimary,
+        backgroundColor: Colors.white,
+        foregroundColor: Color(0xFF333333),
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: Color(0xFF333333),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: Color(0xFF666666)),
       ),
-      cardTheme: CardThemeData(
+      popupMenuTheme: PopupMenuThemeData(
         color: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: borderColor),
-        ),
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: inputBackgroundColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
@@ -75,50 +49,35 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: primaryColor,
-        surface: const Color(0xFF202123),
+        secondary: accentColor,
+        surface: const Color(0xFF2F2F2F),
         onPrimary: Colors.white,
-        onSurface: const Color(0xFFECECEC),
+        onSurface: const Color(0xFFE0E0E0),
       ),
-      scaffoldBackgroundColor: const Color(0xFF343541),
+      scaffoldBackgroundColor: const Color(0xFF171717),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF343541),
-        foregroundColor: Color(0xFFECECEC),
+        backgroundColor: Color(0xFF171717),
+        foregroundColor: Color(0xFFE0E0E0),
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: Color(0xFFE0E0E0),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: Color(0xFFAAAAAA)),
       ),
-      cardTheme: CardThemeData(
-        color: const Color(0xFF444654),
-        elevation: 0,
+      popupMenuTheme: PopupMenuThemeData(
+        color: const Color(0xFF2F2F2F),
+        elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: const Color(0xFF40414F),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

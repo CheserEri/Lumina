@@ -30,15 +30,18 @@ impl Default for AppConfig {
     fn default() -> Self {
         Self {
             ollama: OllamaConfig {
-                base_url: "http://localhost:11434".to_string(),
+                // 填写 Ollama 服务地址，如本地部署: "http://localhost:11434"
+                // 或局域网地址: "http://192.168.x.x:11434"
+                base_url: "http://192.168.x.x:11434".to_string(),
                 timeout_secs: 300,
             },
             server: ServerConfig {
                 host: "0.0.0.0".to_string(),
-                port: 8080,
+                port: 3000,
             },
             chat_history: ChatHistoryConfig {
-                save_directory: "E:\\Code\\History".to_string(),
+                // 填写聊天历史保存目录路径
+                save_directory: "/path/to/chat/history".to_string(),
                 auto_save: true,
                 auto_save_interval: 300, // 5分钟
             },

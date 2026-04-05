@@ -11,8 +11,10 @@ use crate::handlers::AppState;
 use crate::ollama::client::OllamaClient;
 use crate::routes::create_router;
 use axum::http::Method;
+use axum::Router;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -48,7 +50,21 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any);
 
-    let app = create_router(state).layer(cors);
+    let api_router = create_router(state).layer(cors);
+
+    let web_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.join("web")))
+        .filter(|p| p.exists());
+
+    let app = if let Some(web_dir) = web_dir {
+        tracing::info!("Serving static files from: {:?}", web_dir);
+        api_router.fallback_service(ServeDir::new(&web_dir))
+    } else {
+        tracing::warn!("No web directory found, serving API only");
+        api_router
+    };
+
     let addr = format!("{}:{}", config.server.host, config.server.port);
     tracing::info!("Server listening on {}", addr);
 
